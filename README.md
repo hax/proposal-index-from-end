@@ -1,60 +1,87 @@
-# template-for-proposals
+# Proposal for `a[^i]` syntax
 
-A repository template for ECMAScript proposals.
+A JavaScript proposal to add `a[^i]` syntax for `a[a.length - i]`
 
-## Before creating a proposal
+Stage: 0
 
-Please ensure the following:
-  1. You have read the [process document](https://tc39.github.io/process-document/)
-  1. You have reviewed the [existing proposals](https://github.com/tc39/proposals/)
-  1. You are aware that your proposal requires being a member of TC39, or locating a TC39 delegate to "champion" your proposal
+Champions: HE Shi-Jun
 
-## Create your proposal repo
+Rationale
+---------
 
-Follow these steps:
-  1.  Click the green ["use this template"](https://github.com/tc39/template-for-proposals/generate) button in the repo header. (Note: Do not fork this repo in GitHub's web interface, as that will later prevent transfer into the TC39 organization)
-  1.  Go to your repo settings “Options” page, under “GitHub Pages”, and set the source to the **main branch** under the root (and click Save, if it does not autosave this setting)
-      1. check "Enforce HTTPS"
-      1. On "Options", under "Features", Ensure "Issues" is checked, and disable "Wiki", and "Projects" (unless you intend to use Projects)
-      1. Under "Merge button", check "automatically delete head branches"
-<!--
-  1.  Avoid merge conflicts with build process output files by running:
-      ```sh
-      git config --local --add merge.output.driver true
-      git config --local --add merge.output.driver true
-      ```
-  1.  Add a post-rewrite git hook to auto-rebuild the output on every commit:
-      ```sh
-      cp hooks/post-rewrite .git/hooks/post-rewrite
-      chmod +x .git/hooks/post-rewrite
-      ```
--->
-  3.  ["How to write a good explainer"][explainer] explains how to make a good first impression.
+For many years, programmers have asked for the ability to do "negative indexing" of JS Arrays, like you can do with Python. That is, asking for the ability to write `arr[-1]` instead of `arr[arr.length-1]`, where negative numbers count backwards from the last element.
 
-      > Each TC39 proposal should have a `README.md` file which explains the purpose
-      > of the proposal and its shape at a high level.
-      >
-      > ...
-      >
-      > The rest of this page can be used as a template ...
+Unfortunately, JS's language design makes this impossible. The `[]` syntax is not specific to Arrays and Strings; it applies to all objects. Referring to a value by index, like `arr[1]`, actually just refers to the property of the object with the key "1", which is something that any object can have. So `arr[-1]` already "works" in today's code, but it returns the value of the "-1" property of the object, rather than returning an index counting back from the end.
 
-      Your explainer can point readers to the `index.html` generated from `spec.emu`
-      via markdown like
+There have been many attempts to work around this; the most recent is a restricted proposal to make it easier to access just the last element of an array (<https://github.com/tc39/proposal-array-last>) via a `.last` property.
 
-      ```markdown
-      You can browse the [ecmarkup output](https://ACCOUNT.github.io/PROJECT/)
-      or browse the [source](https://github.com/ACCOUNT/PROJECT/blob/HEAD/spec.emu).
-      ```
+This proposal instead adopts a more common approach, and suggests adding a `arr[^N]` syntax, which just work as `arr[arr.length - N]`, with the semantics as described above.
 
-      where *ACCOUNT* and *PROJECT* are the first two path elements in your project's Github URL.
-      For example, for github.com/**tc39**/**template-for-proposals**, *ACCOUNT* is "tc39"
-      and *PROJECT* is "template-for-proposals".
+### Existing Methods
+
+Currently, to access a value from the end of an indexable object, the common practice is to write `arr[arr.length - N]`, where N is the Nth item from the end.  This requires naming the indexable twice, additionally adds 7 more characters for the `.length`, and is hostile to anonymous values; you can't use this technique to grab the last item of the return value of a function unless you first store it in a temp variable.
+
+Another method that avoids some of those drawbacks, but has some performance drawbacks of its own, is `arr.slice(-N)[0]`. This avoids repeating the name, and thus is friendly to anonymous values as well. However, the spelling is a little weird, particularly the trailing `[0]` (since `.slice()` returns an Array). Also, a temporary array is created with all the contents of the source from the desired item to the end, only to be immediately thrown away after retrieving the first item.
+
+Note, however, the fact that `.slice()` (and related methods like `.splice()`) already have the notion of negative indexes, and resolve them exactly as desired.
+
+Possible Issues
+---------------
+
+`arr[^N]` is a pure syntax sugar (though we may extend `^N` as a first-class value in the future like C#), some TC39 delegates don't like syntax sugar, or setup a very high bar for any new syntax.
+
+Transpiling
+-----------
+
+```js
+// x = EXPR[^N]
+// ->
+x = ((a, n) => a[a.length - n])(EXPR, N)
+
+// EXPR[^N] = VALUE
+// ->
+((a, n, v) => (a[a.length - n] = v))(EXPR, N, VALUE)
+```
+
+## Comparison of `arr[^N]` to `arr.at(-N)` proposal
+
+### Web compatibility
+
+`arr[^N]` do not have web compat issue.
+
+`.item()` (the old version of `.at()`) has been proved suffer from web compat issue, `.at()` might also be web incompatible, for example, Sugar.js provide `Array.prototype.at()` from 2010, and old `String.prototype.at()` polyfill with incompatible semantic.
+
+### Generality
+
+`arr[^N]` work for both read and write.
+
+`.at()` only applies to read.
+
+### Ergonomics
+
+Similar, though `arr[^N]` is 3 chars shorter than `arr.at(-N)`
+
+### Learning, understanding and memory cost
+
+`arr[^N]` could be think as pure syntax sugar, so every JS programmers could learn it in 1 minute.
+
+`.at()` looks also easy, but in real programming there are much things to consider, need to RTFM:
+- Which objects have the `at()` method? Does strings have it? Does DOM collections have it?
+- Does `.at()` throw or return `undefined` for out of range index?
+- Is `string.at()` codepoint safe?
+- What `.at(-0)` means?
+- etc.
+
+### Adoption cost
+
+Similar, `arr[^N]` need transpiling but no runtime polyfill; `.at()` need no transpiling but runtime polyfill.
+
+### Relation to other proposals
+
+`arr[^N]` could be extended to slice notation: `arr[0:^N]` (drop last N items), `arr[^N:^0]` (take last N items), which solve the block issue (syntax/semantic inconsitency of `a[-1]` with `a[0:-1]`) of slice notation.
+
+### Edge case
+
+Note, `^N` always means `arr.length - N`, so if `N` is 0, it means `arr.length`, as programmer expect. On the other side, `a.at(-N)` and `a.slice(-N)` have the edge case of `-0` which behave same as `0`, it's very likely not programmers expect and error-prone. This edge case is very common in `slice` usage, but may also affect `at`, for example code `if (arr.at(-N) !== undefined) ...`.
 
 
-## Maintain your proposal repo
-
-  1. Make your changes to `spec.emu` (ecmarkup uses HTML syntax, but is not HTML, so I strongly suggest not naming it ".html")
-  1. Any commit that makes meaningful changes to the spec, should run `npm run build` and commit the resulting output.
-  1. Whenever you update `ecmarkup`, run `npm run build` and commit any changes that come from that dependency.
-
-  [explainer]: https://github.com/tc39/how-we-work/blob/HEAD/explainer.md
