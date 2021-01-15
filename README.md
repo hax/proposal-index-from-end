@@ -57,6 +57,10 @@ x = ((a, n) => a[a.length - n])(EXPR, N)
 
 `.at()` only applies to read.
 
+`arr[^N]` work for everything which is Array Like.
+
+`.at()` only applies to Array, TypedArray, String.
+
 ### Ergonomics
 
 Similar, though `arr[^N]` is 3 chars shorter than `arr.at(-N)`
