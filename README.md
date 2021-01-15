@@ -15,7 +15,7 @@ Unfortunately, JS's language design makes this impossible. The `[]` syntax is no
 
 There have been many attempts to work around this; the most recent is a restricted proposal to make it easier to access just the last element of an array (<https://github.com/tc39/proposal-array-last>) via a `.last` property.
 
-This proposal instead adopts a more common approach, and suggests adding a `arr[^N]` syntax, which just work as `arr[arr.length - N]`, with the semantics as described above.
+This proposal instead adopts a more common approach, and suggests adding a `arr[^N]` syntax (follow the prior art of C#), which just work as `arr[arr.length - N]`, with the semantics as described above.
 
 ### Existing Methods
 
@@ -84,4 +84,31 @@ Similar, `arr[^N]` need transpiling but no runtime polyfill; `.at()` need no tra
 
 Note, `^N` always means `arr.length - N`, so if `N` is 0, it means `arr.length`, as programmer expect. On the other side, `a.at(-N)` and `a.slice(-N)` have the edge case of `-0` which behave same as `0`, it's very likely not programmers expect and error-prone. This edge case is very common in `slice` usage, but may also affect `at`, for example code `if (arr.at(-N) !== undefined) ...`.
 
+
+## Prior arts
+
+### C# 8 `^fromEnd` (*index from end* operator)
+- https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-8.0/ranges#systemindex
+- https://stackoverflow.com/questions/54092458/why-doesnt-the-new-hat-operator-index-from-the-c-sharp-8-array-slicing-feature/54092520
+- https://www.reddit.com/r/csharp/comments/arknnk/c_8_introducing_index_struct_and_a_brand_new/
+
+### D `a[$-1]`
+
+- https://dlang.org/spec/arrays.html#array-length
+- https://dlang.org/spec/operatoroverloading.html#dollar
+
+### Raku (formerly Perl 6) drop Perl's `@a[-i]` and introduce `@a[*-i]` 
+- https://docs.raku.org/language/traps#Referencing_the_last_element_of_an_array
+- https://docs.raku.org/language/subscripts#From_the_end
+- https://design.raku.org/S09.html#Negative_and_differential_subscripts
+
+### Other relevant discussions
+
+- https://github.com/rust-lang/rfcs/issues/2249#issuecomment-352128826
+- https://stackoverflow.com/questions/39460528/in-string-prototype-slice-should-slice0-0-and-slice0-0-output-the-sam/39461147
+- https://bytes.com/topic/python/answers/504522-string-negative-indices
+- https://tesarek.me/articles/slicing-primer#indexing
+- https://open.cs.uwaterloo.ca/python-from-scratch/2/9/transcript
+- https://stackoverflow.com/questions/31740252/when-use-negative-number-to-slice-a-string-in-python-0-is-disabled?noredirect=1&lq=1
+- https://news.ycombinator.com/item?id=13186225
 
