@@ -40,7 +40,7 @@ a // [1, 2, 3, 5, 10]
 Possible Issues
 ---------------
 
-`arr[^N]` is a pure syntax sugar (though we may extend `^N` as a first-class value in the future like C#), some TC39 delegates don't like syntax sugar, or setup a very high bar for any new syntax.
+`arr[^N]` is very close to a pure syntax sugar (though we may extend `^N` as a first-class value in the future like C#), some TC39 delegates don't like syntax sugar, or setup a very high bar for any new syntax.
 
 Transpiling
 -----------
