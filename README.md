@@ -25,6 +25,18 @@ Another method that avoids some of those drawbacks, but has some performance dra
 
 Note, however, the fact that `.slice()` (and related methods like `.splice()`) already have the notion of negative indexes, and resolve them exactly as desired.
 
+
+Examples
+--------
+```js
+let a = [1, 2, 3, 4]
+a[^1] // 4
+++a[^1] // 5
+a[^0] // a[4], undefined
+a[^0] = 10
+a // [1, 2, 3, 5, 10]
+```
+
 Possible Issues
 ---------------
 
