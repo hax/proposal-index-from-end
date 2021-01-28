@@ -42,18 +42,30 @@ Possible Issues
 
 `arr[^N]` is very close to a pure syntax sugar (though we may extend `^N` as a first-class value in the future like C#), some TC39 delegates don't like syntax sugar, or setup a very high bar for any new syntax.
 
+Semantics
+---------
+
+`a[^i]` work as `a[LengthOfArrayLike(a) - Number(i)]`.
+
+Note, `a[^i]` will have two Get operations on `a` which the first is accessing `a.length`. And `a[^i] += 1` only access `a.length` once.
+
 Transpiling
 -----------
 
 ```js
 // x = EXPR[^N]
 // ->
-x = ((a, n) => a[a.length - n])(EXPR, N)
+x = ((a, n) => a[LengthOfArrayLike(a) - Number(n)])(EXPR, N)
+```
 
+```js
 // EXPR[^N] = VALUE
 // ->
-((a, n, v) => (a[a.length - n] = v))(EXPR, N, VALUE)
+((a, n, v) => (a[LengthOfArrayLike(a) - Number(n)] = v))(EXPR, N, VALUE)
 ```
+
+
+
 
 ## Comparison of `arr[^N]` to `arr.at(-N)` proposal
 
