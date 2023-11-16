@@ -106,6 +106,12 @@ See the discussions of `-0` edge case in various places:
 - https://news.ycombinator.com/item?id=13186225
 
 
+## FAQ
+
+### Why `^i` syntax is not 0-based but 1-based?
+
+To get the last element, you should use `a[^1]`. But it's still 0-based, and `^0` means the end position of the indexed collection (aka. the value of the `length` property). This make `a[^i]` be a better version of `a.at(-i)` or `a[a.length - i]`, and fit for slice notation proposal. See [the discussion](https://github.com/hax/proposal-index-from-end/issues/3#issuecomment-766686344) for more information.
+
 ## Prior arts
 
 ### C# 8 `^fromEnd` (*index from end* operator)
