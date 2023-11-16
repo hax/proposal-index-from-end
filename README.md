@@ -4,30 +4,18 @@ A JavaScript proposal to add `a[^i]` syntax for `a[a.length - i]`
 
 Stage: 0
 
-Champions: HE Shi-Jun
+Champions: HE Shi-Jun (hax)
 
-Rationale
----------
+## Rationale
 
 For many years, programmers have asked for the ability to do "negative indexing" of JS Arrays, like you can do with Python. That is, asking for the ability to write `arr[-1]` instead of `arr[arr.length-1]`, where negative numbers count backwards from the last element.
 
 Unfortunately, JS's language design makes this impossible. The `[]` syntax is not specific to Arrays and Strings; it applies to all objects. Referring to a value by index, like `arr[1]`, actually just refers to the property of the object with the key "1", which is something that any object can have. So `arr[-1]` already "works" in today's code, but it returns the value of the "-1" property of the object, rather than returning an index counting back from the end.
 
-There have been many attempts to work around this; the most recent is a restricted proposal to make it easier to access just the last element of an array (<https://github.com/tc39/proposal-array-last>) via a `.last` property.
+This proposal suggests adding a `arr[^N]` syntax (follow the prior art of C#), which just work as `arr[arr.length - N]`, with the semantics as described above.
 
-This proposal instead adopts a more common approach, and suggests adding a `arr[^N]` syntax (follow the prior art of C#), which just work as `arr[arr.length - N]`, with the semantics as described above.
+## Examples
 
-### Existing Methods
-
-Currently, to access a value from the end of an indexable object, the common practice is to write `arr[arr.length - N]`, where N is the Nth item from the end.  This requires naming the indexable twice, additionally adds 7 more characters for the `.length`, and is hostile to anonymous values; you can't use this technique to grab the last item of the return value of a function unless you first store it in a temp variable.
-
-Another method that avoids some of those drawbacks, but has some performance drawbacks of its own, is `arr.slice(-N)[0]`. This avoids repeating the name, and thus is friendly to anonymous values as well. However, the spelling is a little weird, particularly the trailing `[0]` (since `.slice()` returns an Array). Also, a temporary array is created with all the contents of the source from the desired item to the end, only to be immediately thrown away after retrieving the first item.
-
-Note, however, the fact that `.slice()` (and related methods like `.splice()`) already have the notion of negative indexes, and resolve them exactly as desired.
-
-
-Examples
---------
 ```js
 let a = [1, 2, 3, 4]
 a[^1] // 4
@@ -37,20 +25,13 @@ a[^0] = 10
 a // [1, 2, 3, 5, 10]
 ```
 
-Possible Issues
----------------
-
-`arr[^N]` is very close to a pure syntax sugar (though we may extend `^N` as a first-class value in the future like C#), some TC39 delegates don't like syntax sugar, or setup a very high bar for any new syntax.
-
-Semantics
----------
+## Semantics
 
 `a[^i]` work as `a[LengthOfArrayLike(a) - Number(i)]`.
 
 Note, `a[^i]` will have two Get operations on `a` which the first is accessing `a.length`. And `a[^i] += 1` only access `a.length` once.
 
-Transpiling
------------
+## Transpiling
 
 ```js
 // x = EXPR[^N]
@@ -64,16 +45,11 @@ x = ((a, n) => a[LengthOfArrayLike(a) - Number(n)])(EXPR, N)
 ((a, n, v) => (a[LengthOfArrayLike(a) - Number(n)] = v))(EXPR, N, VALUE)
 ```
 
+## Comparison of `arr[^N]` to `arr[arr.length - N]`
 
+Currently, to access a value from the end of an indexable object, the common practice is to write `arr[arr.length - N]`, where N is the Nth item from the end.  This requires naming the indexable twice, additionally adds 7 more characters for the `.length`, and is hostile to anonymous values; you can't use this technique to grab the last item of the return value of a function unless you first store it in a temp variable.
 
-
-## Comparison of `arr[^N]` to `arr.at(-N)` proposal
-
-### Web compatibility
-
-`arr[^N]` do not have web compat issue.
-
-`.item()` (the old version of `.at()`) has been proved suffer from web compat issue, `.at()` might also be web incompatible, for example, Sugar.js provide `Array.prototype.at()` from 2010, and old `String.prototype.at()` polyfill with incompatible semantic.
+## Comparison of `arr[^N]` to `arr.at(-N)`
 
 ### Generality
 
