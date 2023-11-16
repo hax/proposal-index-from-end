@@ -27,7 +27,14 @@ a // [1, 2, 3, 5, 10]
 
 ## Semantics
 
-`a[^i]` work as `a[LengthOfArrayLike(a) - Number(i)]`.
+`a[^i]` work as `a[CalcIndexFromEnd(a, i)]`.
+
+```js
+function CalcIndexFromEnd(a, i) {
+  // TBD: how to handle non-index cases?
+  return LengthOfArrayLike(a) - Number(i)
+}
+```
 
 Note, `a[^i]` will have two Get operations on `a` which the first is accessing `a.length`. And `a[^i] += 1` only access `a.length` once.
 
@@ -36,13 +43,13 @@ Note, `a[^i]` will have two Get operations on `a` which the first is accessing `
 ```js
 // x = EXPR[^N]
 // ->
-x = ((a, n) => a[LengthOfArrayLike(a) - Number(n)])(EXPR, N)
+x = ((a, n) => a[CalcIndexFromEnd(a, n)])(EXPR, N)
 ```
 
 ```js
 // EXPR[^N] = VALUE
 // ->
-((a, n, v) => (a[LengthOfArrayLike(a) - Number(n)] = v))(EXPR, N, VALUE)
+((a, n, v) => (a[CalcIndexFromEnd(a, n)] = v))(EXPR, N, VALUE)
 ```
 
 ## Comparison of `arr[^N]` to `arr[arr.length - N]`
