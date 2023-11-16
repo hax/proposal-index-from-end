@@ -31,10 +31,11 @@ a // [1, 2, 3, 5, 10]
 
 ```js
 function CalcIndexFromEnd(a, i) {
-  // TBD: how to handle non-index cases?
+  // TBD: how to handle non-index cases? [1]
   return LengthOfArrayLike(a) - Number(i)
 }
 ```
+[1] See [#5](https://github.com/hax/proposal-index-from-end/issues/5)
 
 Note, `a[^i]` will have two Get operations on `a` which the first is accessing `a.length`. And `a[^i] += 1` only access `a.length` once.
 
